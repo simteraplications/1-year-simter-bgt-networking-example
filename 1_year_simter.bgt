@@ -1,0 +1,93 @@
+string deckey="we celebrate 1 year simter prods";
+network n;
+network_event e;
+string compid=generate_computer_id("1 year simter tt client",true);
+void send(string msg)
+{
+n.send_reliable(0,string_encrypt(msg,deckey),0);
+}
+string get_event_message()
+{
+return string_decrypt(e.message,deckey);
+}
+void main()
+{
+
+if(compid=="")
+{
+alert("don't play that compid game with me","");
+exit();
+}
+connect();
+string name=input_box("","please enter your name.");
+if(name=="")
+{
+alert("","no fields can be empty.");
+disconnect();
+exit();
+}
+string email=input_box("","please enter your email address.");
+if(email=="")
+{
+alert("","no fields can be empty.");
+disconnect();
+exit();
+}
+string tcpudp=input_box("","please enter the wanted tcp and udp ports for your tt server seperated by spaces. Please don't use the default port 10333 or ports less then 1000.");
+if(tcpudp=="")
+{
+alert("","no fields can be empty.");
+disconnect();
+exit();
+}
+send(compid+"::"+name+"::"+email+"::"+tcpudp);
+timer failtimer;
+failtimer.restart();
+while(true)
+{
+wait(5);
+e=n.request();
+if(get_event_message()=="done")
+{
+alert("yay!","your tt has been created.");
+disconnect();
+exit();
+}
+if(get_event_message()=="alreadydid")
+{
+alert("hay doode, didn't i told you that","you can only participate once even if your name is "+read_environment_variable("username")+" and for what ever reason you think you are the only one allowed to use this service.");
+disconnect();
+exit();
+}
+if(failtimer.elapsed>=10000)
+{
+alert("woops?","the connection broke. Please try again.");
+exit();
+}
+}
+}
+void connect()
+{
+n.setup_client(100,100);
+n.connect("localhost",1919);
+timer failtimer;
+failtimer.restart();
+while(true)
+{
+wait(5);
+e=n.request();
+if(e.type==event_connect)
+{
+break;
+}
+if(failtimer.elapsed>=10000)
+{
+alert("connection problem.","");
+exit();
+}
+}
+}void disconnect()
+{
+send("theend");
+exit();
+}

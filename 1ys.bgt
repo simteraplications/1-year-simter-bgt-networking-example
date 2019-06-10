@@ -1,0 +1,74 @@
+string deckey="we celebrate 1 year simter prods";
+network n;
+network_event e;
+//string compid=generate_computer_id("1 year simter tt client",true);
+file f, pf;
+string[] compids;
+void send(string msg, int pid)
+{
+n.send_reliable(pid,string_encrypt(msg,deckey),0);
+}
+string get_event_message()
+{
+return string_decrypt(e.message,deckey);
+}
+void main()
+{
+show_game_window("1! Year! Me!");
+if(!directory_exists("participated"))
+{
+directory_create("participated");
+}
+pf.open("compids.conf","a");
+compids=string_split(f.read(),"\r\n",true);
+n.setup_server(1919,100,100);
+while(true)
+{
+wait(5);
+server();
+if(key_pressed(KEY_ESCAPE))
+{
+n.destroy();
+exit();
+}
+}
+}
+void server()
+{
+e=n.request();
+if(e.type==event_receive)
+{
+string[] parsed=string_split(get_event_message(),"::",true);
+if(parsed[0]=="theend")
+{
+n.disconnect_peer_softly(e.peer_id);
+}
+else
+{
+bool alreadythere=false;
+for(uint i=0; i<compids.length; i++)
+{
+if(parsed[0]==compids[i]) alreadythere=true;
+}
+if(alreadythere)
+{
+send("alreadydid",e.peer_id);
+}
+else
+{
+pf.write(parsed[0]+"::");
+pf.close();
+
+pf.open("compids.conf","a");
+compids.insert_last(parsed[0]);
+string n=parsed[1];
+string eml=parsed[2];
+string tu=parsed[3];
+f.open("participated/"+n+".txt","w");
+f.write(n+"::"+eml+"::"+tu);
+f.close();
+send("done",e.peer_id);
+}
+}
+}
+}
