@@ -1,2 +1,2 @@
-# 1-year-simter-bgt-networking-example
-this was the aplication that was used for the simter hosting 1 year game. It's free to use for anyone.
+#welcome
+This are 2 little scripts, a client and a server, writn in bgt. Those are soposed to help new developers get into the language easy.
